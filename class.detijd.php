@@ -38,7 +38,7 @@ class Detijd
 
         $this->x = $this->y = $this->size;
         $this->height = $this->size * self::HEIGHT_MULTIPLIER;
-        $this->width = $this->size * 3;
+        $this->width = $this->size;
 
         // Start a basic drawing context, even though we don't know the actual width yet.
         $draw = new ImagickDraw();
@@ -98,16 +98,16 @@ class Detijd
         $this->im->newImage($this->width, $this->height, new ImagickPixel(self::WHITE));
         $this->im->setImageFormat($this->type);
 
-        $draw->setFillColor(new ImagickPixel('#000000'));
-        $x2 = $this->x + $this->size + mt_rand(-1, 2);
-        $y2 = $this->y + $this->size + mt_rand(-1, 2);
-        $draw->rectangle($this->x, $this->y, $x2, $y2);
-
         $this->im->drawImage($draw);
 
         $seconds = 60;
 
         for($i = 0; $i < $seconds; $i++) {
+            $this->x = $this->size * 11;
+            $this->y = $this->size;
+
+            $second = str_pad($i, 2, '0', STR_PAD_LEFT);
+
             $frame = new Imagick;
             $frame->newImage($this->width, $this->height, new ImagickPixel(self::WHITE));
             $frame->setImageDelay(100);
@@ -125,9 +125,6 @@ class Detijd
             $this->im->addImage($frame);
 
             $frame->destroy();
-
-            $this->x = $this->size * 15;
-            $this->y = $this->size;
         }
     }
 
