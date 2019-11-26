@@ -7,7 +7,7 @@ class Detijd
     private $format = 'H:i:s';
     private $height = 300;
     private $width = 300;
-    private $type = 'png';
+    private $type = 'gif';
     private $x = 0;
     private $y = 0;
     private $size = 24;
@@ -29,7 +29,7 @@ class Detijd
         $this->c[0x38] = array(1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,0,0,0,0,0,0);//8
         $this->c[0x39] = array(1,1,1,1,0,1,1,0,1,1,1,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0);//9
 
-        $this->im = new Imagick();
+        $this->im = new Imagick;
         $this->im->newImage($this->width, $this->height, new ImagickPixel(self::WHITE));
         $this->im->setImageFormat($this->type);
 
@@ -43,6 +43,20 @@ class Detijd
         $draw->rectangle($this->x, $this->y, $x2, $y2);
 
         $this->im->drawImage($draw);
+
+        $frame = new Imagick;
+        $frame->newImage($this->width, $this->height, new ImagickPixel(self::WHITE));
+        $frame->setImageDelay(10);
+        $frame->setImageFormat($this->type);
+
+        $draw->setFillColor(new ImagickPixel('#ff0000'));
+        $x2 = $this->x + $this->size + mt_rand(-1, 2);
+        $y2 = $this->y + $this->size + mt_rand(-1, 2);
+        $draw->rectangle($this->x, $this->y, $x2, $y2);
+
+        $frame->drawImage($draw);
+
+        $this->im->addImage($frame);
     }
 
     public function __toString()
@@ -54,6 +68,11 @@ class Detijd
     {
         header('Content-Type: ' . $this->im->getImageMimeType());
 
-        echo $this->im->getImageBlob();
+        echo $this->im->getImagesBlob();
+    }
+
+    public function setType($type)
+    {
+        $this->type = $type;
     }
 }
