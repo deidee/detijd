@@ -14,7 +14,7 @@ class Detijd
     private $y = 0;
     private $size = 24;
     private $c = [];
-    private $text = '1234';
+    private $text = '12:34';
     private $ones = 0;
     private $zeros = 0;
 
@@ -34,6 +34,8 @@ class Detijd
         $this->c[0x38] = array(1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,0,0,0,0,0,0);//8
         $this->c[0x39] = array(1,1,1,1,0,1,1,0,1,1,1,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0);//9
 
+        $this->c[0x3A] = array(1,0,0,0,0,0,1,0,0);//:
+
         $this->x = $this->y = $this->size;
         $this->height = $this->size * self::HEIGHT_MULTIPLIER;
         $this->width = $this->size * 3;
@@ -43,7 +45,7 @@ class Detijd
         $draw->setViewbox(0, 0, $this->width, $this->height);
         $draw->setStrokeWidth(0);
 
-        for($i = 0; $i < 4; ++$i)
+        for($i = 0; $i < 5; ++$i)
         {
             // Isolate a character from the text string.
             $char = mb_substr($this->text, $i, 1);
@@ -103,19 +105,30 @@ class Detijd
 
         $this->im->drawImage($draw);
 
-        $frame = new Imagick;
-        $frame->newImage($this->width, $this->height, new ImagickPixel(self::WHITE));
-        $frame->setImageDelay(10);
-        $frame->setImageFormat($this->type);
+        $seconds = 60;
 
-        $draw->setFillColor(new ImagickPixel('#ff0000'));
-        $x2 = $this->x + $this->size + mt_rand(-1, 2);
-        $y2 = $this->y + $this->size + mt_rand(-1, 2);
-        $draw->rectangle($this->x, $this->y, $x2, $y2);
+        for($i = 0; $i < $seconds; $i++) {
+            $frame = new Imagick;
+            $frame->newImage($this->width, $this->height, new ImagickPixel(self::WHITE));
+            $frame->setImageDelay(100);
+            $frame->setImageFormat($this->type);
 
-        $frame->drawImage($draw);
+            $color = 'rgb(' . mt_rand(0, 255) . ', ' . mt_rand(0, 255) . ', ' . mt_rand(0, 255) . ')';
 
-        $this->im->addImage($frame);
+            $draw->setFillColor(new ImagickPixel($color));
+            $x2 = $this->x + $this->size + mt_rand(-1, 2);
+            $y2 = $this->y + $this->size + mt_rand(-1, 2);
+            $draw->rectangle($this->x, $this->y, $x2, $y2);
+
+            $frame->drawImage($draw);
+
+            $this->im->addImage($frame);
+
+            $frame->destroy();
+
+            $this->x = $this->size * 15;
+            $this->y = $this->size;
+        }
     }
 
     public function __toString()
