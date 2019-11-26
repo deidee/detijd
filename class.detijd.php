@@ -23,6 +23,8 @@ class Detijd
         // Set default timezone. See https://www.php.net/manual/en/timezones.europe.php.
         date_default_timezone_set('Europe/Amsterdam');
 
+        $this->text = date('H:i:s');
+
         $this->c[0x30] = array(1,1,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,1,1,0,0,0,0,0,0);//0
         $this->c[0x31] = array(0,1,0,1,1,0,0,1,0,0,1,0,0,1,0,0,1,0,1,1,1,0,0,0,0,0,0);//1
         $this->c[0x32] = array(1,1,1,0,0,1,0,0,1,1,1,1,1,0,0,1,0,0,1,1,1,0,0,0,0,0,0);//2
@@ -45,7 +47,9 @@ class Detijd
         $draw->setViewbox(0, 0, $this->width, $this->height);
         $draw->setStrokeWidth(0);
 
-        for($i = 0; $i < 5; ++$i)
+        $length = mb_strlen($this->text);
+
+        for($i = 0; $i < $length; ++$i)
         {
             // Isolate a character from the text string.
             $char = mb_substr($this->text, $i, 1);
@@ -101,9 +105,11 @@ class Detijd
         $this->im->drawImage($draw);
 
         $seconds = 60;
+        $current_second = idate('s');
+        $seconds_left = $seconds - $current_second;
 
         for($i = 0; $i < $seconds; $i++) {
-            $this->x = $this->size * 11;
+            $this->x = $this->size * 21;
             $this->y = $this->size;
 
             $second = str_pad($i, 2, '0', STR_PAD_LEFT);
