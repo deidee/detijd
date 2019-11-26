@@ -12,18 +12,22 @@ class Detijd
     private $type = 'gif';
     private $x = 0;
     private $y = 0;
-    private $size = 24;
+    private $size = 12;
     private $c = [];
     private $text = '12:34';
     private $ones = 0;
     private $zeros = 0;
+    private $second = 0;
+    private $time = 0;
 
     public function __construct($settings = [])
     {
         // Set default timezone. See https://www.php.net/manual/en/timezones.europe.php.
         date_default_timezone_set('Europe/Amsterdam');
 
-        $this->text = date('H:i:s');
+        $this->time = time();
+        $this->text = date('H:i:s', $this->time);
+        $this->second = idate('s', $this->time);
 
         $this->c[0x30] = array(1,1,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,1,1,0,0,0,0,0,0);//0
         $this->c[0x31] = array(0,1,0,1,1,0,0,1,0,0,1,0,0,1,0,0,1,0,1,1,1,0,0,0,0,0,0);//1
@@ -101,14 +105,15 @@ class Detijd
         $this->im = new Imagick;
         $this->im->newImage($this->width, $this->height, new ImagickPixel(self::WHITE));
         $this->im->setImageFormat($this->type);
+        $this->im->setImageDelay(100);
 
         $this->im->drawImage($draw);
 
         $seconds = 60;
-        $current_second = idate('s');
-        $seconds_left = $seconds - $current_second;
+        $next_second = $this->second === 59 ? 0 : $this->second + 1;
+        $seconds_left = $seconds - $next_second;
 
-        for($i = 0; $i < $seconds; $i++) {
+        for($i = $this->second; $i < $seconds; $i++) {
             $this->x = $this->size * 21;
             $this->y = $this->size;
 
@@ -119,18 +124,137 @@ class Detijd
             $frame->setImageDelay(100);
             $frame->setImageFormat($this->type);
 
-            $color = 'rgb(' . mt_rand(0, 255) . ', ' . mt_rand(0, 255) . ', ' . mt_rand(0, 255) . ')';
-
-            $draw->setFillColor(new ImagickPixel($color));
-            $x2 = $this->x + $this->size + mt_rand(-1, 2);
-            $y2 = $this->y + $this->size + mt_rand(-1, 2);
+            $draw->setFillColor(new ImagickPixel('#ffffff'));
+            $x2 = $this->x + $this->size * 8;
+            $y2 = $this->y + $this->size * 8;
             $draw->rectangle($this->x, $this->y, $x2, $y2);
+
+            // Loop through the two digits of the seconds.
+            for($j = 0; $j < 2; ++$j)
+            {
+                // Isolate a character from the text string.
+                $char = mb_substr($second, $j, 1);
+
+                // If we know this character, draw it.
+                if(isset($this->c[mb_ord($char)])) {
+                    $pixels = $this->c[mb_ord($char)];
+                    // We know the rows and the pixels, so we can calculate the columns.
+                    $columns = count($pixels) / self::ROWS;
+                    $column = 0;
+
+                    // Loop through the pixels of the character.
+                    foreach($pixels as $pixel) {
+                        // If we reached the last column of the character, go to a new line.
+                        if ($column === $columns) {
+                            $column = 0;
+                            $this->x -= $this->size * $columns;
+                            $this->y += $this->size;
+                        }
+
+                        // If the pixel is "true", paint it.
+                        if($pixel === 1) {
+                            // Brand it.
+                            $draw->setFillColor(new ImagickPixel($this->deJade()));
+                            $x2 = $this->x + $this->size + mt_rand(-1, 2);
+                            $y2 = $this->y + $this->size + mt_rand(-1, 2);
+                            $draw->rectangle($this->x, $this->y, $x2, $y2);
+                            // Counted.
+                            $this->ones++;
+                        } elseif($pixel === 0) {
+                            // Also count zeros.
+                            $this->zeros++;
+                        }
+
+                        ++$column;
+                        // For every pixel, move one column to the right.
+                        $this->x += $this->size;
+                    }
+
+                    // Once a character is done painting, also move one column to the right. This creates letter spacing.
+                    $this->x += $this->size;
+                    // Reset the top position for a character that might follow.
+                    $this->y -= $this->size * 8;
+                }
+            }
 
             $frame->drawImage($draw);
 
             $this->im->addImage($frame);
 
-            $frame->destroy();
+            $frame->clear();
+        }
+
+        if($seconds_left > 0) {
+            for($i = 0; $i < $seconds_left; $i++) {
+                $this->x = $this->size * 21;
+                $this->y = $this->size;
+
+                $second = str_pad($i, 2, '0', STR_PAD_LEFT);
+
+                $frame = new Imagick;
+                $frame->newImage($this->width, $this->height, new ImagickPixel(self::WHITE));
+                $frame->setImageDelay(100);
+                $frame->setImageFormat($this->type);
+
+                $draw->setFillColor(new ImagickPixel('#ffffff'));
+                $x2 = $this->x + $this->size * 8;
+                $y2 = $this->y + $this->size * 8;
+                $draw->rectangle($this->x, $this->y, $x2, $y2);
+
+                // Loop through the two digits of the seconds.
+                for($j = 0; $j < 2; ++$j)
+                {
+                    // Isolate a character from the text string.
+                    $char = mb_substr($second, $j, 1);
+
+                    // If we know this character, draw it.
+                    if(isset($this->c[mb_ord($char)])) {
+                        $pixels = $this->c[mb_ord($char)];
+                        // We know the rows and the pixels, so we can calculate the columns.
+                        $columns = count($pixels) / self::ROWS;
+                        $column = 0;
+
+                        // Loop through the pixels of the character.
+                        foreach($pixels as $pixel) {
+                            // If we reached the last column of the character, go to a new line.
+                            if ($column === $columns) {
+                                $column = 0;
+                                $this->x -= $this->size * $columns;
+                                $this->y += $this->size;
+                            }
+
+                            // If the pixel is "true", paint it.
+                            if($pixel === 1) {
+                                // Brand it.
+                                $draw->setFillColor(new ImagickPixel($this->deJade()));
+                                $x2 = $this->x + $this->size + mt_rand(-1, 2);
+                                $y2 = $this->y + $this->size + mt_rand(-1, 2);
+                                $draw->rectangle($this->x, $this->y, $x2, $y2);
+                                // Counted.
+                                $this->ones++;
+                            } elseif($pixel === 0) {
+                                // Also count zeros.
+                                $this->zeros++;
+                            }
+
+                            ++$column;
+                            // For every pixel, move one column to the right.
+                            $this->x += $this->size;
+                        }
+
+                        // Once a character is done painting, also move one column to the right. This creates letter spacing.
+                        $this->x += $this->size;
+                        // Reset the top position for a character that might follow.
+                        $this->y -= $this->size * 8;
+                    }
+                }
+
+                $frame->drawImage($draw);
+
+                $this->im->addImage($frame);
+
+                $frame->clear();
+            }
         }
     }
 
