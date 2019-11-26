@@ -4,11 +4,16 @@ Toon de tijd.
 
 ## Te doen
 
-- [ ] Geanimeerde gif genereren.
-- [ ] Huidige (server)tijd tonen.
+- [x] Geanimeerde gif genereren.
+- [x] Huidige (server)tijd tonen.
 - [ ] Aftellen naar een bepaalde datum.
 - [ ] Optellen vanaf een bepaalde datum.
 - [ ] Plekje geven op hetCDN.
+- [ ] Alleen cijfers die veranderen opnieuw tekenen.
+- [ ] Dubbele punten laten knipperen.
+- [ ] Er rekening mee houden dat de minuut en het uur ook kunnen veranderen binnen de 60 frames.
+- [ ] Code opschonen.
+- [ ] Performance verbeteren.
 
 ## Gebruik
 
