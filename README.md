@@ -14,6 +14,9 @@ Toon de tijd.
 - [ ] Er rekening mee houden dat de minuut en het uur ook kunnen veranderen binnen de 60 frames.
 - [ ] Code opschonen.
 - [ ] Performance verbeteren.
+- [ ] Kunnen exporteren naar JPG.
+- [ ] Kunnen exporteren naar PNG.
+- [ ] Kunnen exporteren naar SVG.
 
 ## Gebruik
 
