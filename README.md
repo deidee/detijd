@@ -1,6 +1,6 @@
 # ![detijd](https://deidee.com/logo.png?str=deTijd)
 
-Toon de tijd.
+Toon de tijd in de stijl van [deidee](https://github.com/deidee/).
 
 ## Te doen
 
